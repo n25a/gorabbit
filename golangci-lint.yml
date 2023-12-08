@@ -1,0 +1,73 @@
+run:
+  modules-download-mode: vendor
+
+linters:
+  enable:
+    - decorder
+    - revive
+
+linters-settings:
+  revive:
+    ignore-generated-header: false
+    severity: error
+    rules:
+      # Exported function and methods should have comments. This warns on undocumented exported functions and methods.
+      - name: exported
+        arguments:
+          - checkPrivateReceivers
+
+      # This rule proposes simplifications of variable declarations.
+      - name: var-declaration
+
+      # Check for commonly mistaken usages of the sync/atomic package
+      - name: atomic
+
+      # Warns in the presence of code lines longer than a configured maximum.
+      - name: line-length-limit
+        arguments: [121]
+
+      # By convention, for the sake of readability, variables of type error must be named with the prefix err.
+      - name: error-naming
+
+      # This rule warns on unused parameters. Functions or methods with unused parameters
+      # can be a symptom of an unfinished refactoring or a bug.
+      - name: unused-parameter
+
+      # This rule spots and proposes to remove unreachable code.
+      - name: unreachable-code
+
+      # This rule suggests to remove redundant statements like a break at the end of a case block, for improving
+      # the code's readability.
+      - name: unnecessary-stmt
+
+      # Sometimes gofmt is not enough to enforce a common formatting of a code-base;
+      # this rule warns when there are heading or trailing newlines in code blocks.
+      - name: empty-lines
+
+      # This rule warns on unused method receivers. Methods with unused receivers
+      # can be a symptom of an unfinished refactoring or a bug.
+      - name: unused-receiver
+
+      # Cyclomatic complexity is a measure of code complexity. Enforcing a maximum complexity
+      # per function helps to keep code readable and maintainable.
+      - name: cyclomatic
+        arguments: [5]
+
+      # Packages should have comments. This rule warns on undocumented packages
+      # and when packages comments are detached to the package keyword.
+      - name: package-comments
+
+  decorder:
+    # Required order of `type`, `const`, `var` and `func` declarations inside a file.
+    # Default: types before constants before variables before functions.
+    dec-order:
+      - type
+      - const
+      - var
+      - func
+    # If true, order of declarations is not checked at all.
+    disable-dec-order-check: true
+    # If true, `init` func can be anywhere in file (does not have to be declared before all other functions).
+    disable-init-func-first-check: true
+    # If true, multiple global `type`, `const` and `var` declarations are allowed.
+    disable-dec-num-check: true

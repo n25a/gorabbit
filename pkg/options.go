@@ -1,4 +1,4 @@
-package gorabbit
+package pkg
 
 import amqp "github.com/rabbitmq/amqp091-go"
 

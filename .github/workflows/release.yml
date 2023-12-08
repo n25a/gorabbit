@@ -1,4 +1,4 @@
-name: Release barat
+name: Release gorabbit
 
 on:
   release:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   releases-matrix:
-    name: Release barat
+    name: Release gorabbit
     runs-on: ubuntu-latest
     strategy:
       matrix:

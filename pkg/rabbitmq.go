@@ -13,10 +13,10 @@ import (
 type RabbitMQ interface {
 	Connect() error
 	Close()
-	Conn() *amqp.Connection
-	Channel() *amqp.Channel
-	NewScheduledJob(handler JobHandler, jobExchange string, jobQueue string, autoAck bool) ScheduledJob
-	StartJobs()
+	GetConnection() *amqp.Connection
+	GetChannel() *amqp.Channel
+	NewJob(handler JobHandler, jobExchange string, jobQueue string, autoAck bool, justPublish bool) Job
+	StartConsumingJobs() error
 	ShutdownJobs()
 	Declare(exchangeOpt Opt, queueOpts ...Opt) error
 }
@@ -43,6 +43,14 @@ func NewRabbitMQ(
 	}
 	logLevel = strings.ToLower(logLevel)
 	InitLogger(logLevel)
+
+	if dialTimeout == 0 {
+		dialTimeout = 5
+	}
+
+	if ctxTimeout == 0 {
+		ctxTimeout = time.Second
+	}
 
 	return &rabbitMQ{
 		dsn:         dsn,
@@ -93,7 +101,7 @@ func (r *rabbitMQ) Connect() error {
 		}
 
 		r.ShutdownJobs()
-		r.StartJobs()
+		err = r.StartConsumingJobs()
 		if err != nil {
 			logger.Fatal("error in starting jobs via rabbitMQ", zap.Error(err))
 		}
@@ -108,11 +116,11 @@ func (r *rabbitMQ) Connect() error {
 	return nil
 }
 
-func (r *rabbitMQ) Conn() *amqp.Connection {
+func (r *rabbitMQ) GetConnection() *amqp.Connection {
 	return r.conn
 }
 
-func (r *rabbitMQ) Channel() *amqp.Channel {
+func (r *rabbitMQ) GetChannel() *amqp.Channel {
 	return r.channel
 }
 
@@ -122,7 +130,7 @@ func (r *rabbitMQ) Declare(exchangeOpt Opt, queueOpts ...Opt) error {
 	}
 
 	exchangeOption := exchangeOpt().(exchangeDeclareOpt)
-	err := r.Channel().ExchangeDeclare(
+	err := r.GetChannel().ExchangeDeclare(
 		exchangeOption.name,
 		exchangeOption.kind,
 		exchangeOption.durable,
@@ -137,7 +145,7 @@ func (r *rabbitMQ) Declare(exchangeOpt Opt, queueOpts ...Opt) error {
 
 	for _, o := range queueOpts {
 		option := o().(queueDeclareOpt)
-		queue, err := r.Channel().QueueDeclare(
+		queue, err := r.GetChannel().QueueDeclare(
 			option.name,
 			option.durable,
 			option.autoDelete,
@@ -149,7 +157,7 @@ func (r *rabbitMQ) Declare(exchangeOpt Opt, queueOpts ...Opt) error {
 			return err
 		}
 
-		err = r.Channel().QueueBind(
+		err = r.GetChannel().QueueBind(
 			queue.Name,
 			option.name,
 			exchangeOption.name,
@@ -164,21 +172,27 @@ func (r *rabbitMQ) Declare(exchangeOpt Opt, queueOpts ...Opt) error {
 	return nil
 }
 
-func (r *rabbitMQ) StartJobs() {
+func (r *rabbitMQ) StartConsumingJobs() error {
 	for _, j := range r.jobs {
+		if j.justPublish {
+			continue
+		}
 		err := j.Consume(r.ctxTimeout)
 		if err != nil {
-			logger.Fatal("error in starting job", zap.Error(err))
+			logger.Error("error in starting job", zap.Error(err))
+			return fmt.Errorf("error in starting job: %s", err)
 		}
 	}
+	return nil
 }
 
-func (r *rabbitMQ) NewScheduledJob(
+func (r *rabbitMQ) NewJob(
 	handler JobHandler,
 	jobExchange string,
 	jobQueue string,
 	autoAck bool,
-) ScheduledJob {
+	justPublish bool,
+) Job {
 	j := &job{
 		channel:     r.channel,
 		handler:     handler,
@@ -186,6 +200,7 @@ func (r *rabbitMQ) NewScheduledJob(
 		jobQueue:    jobQueue,
 		shutdown:    make(chan struct{}),
 		autoAck:     autoAck,
+		justPublish: justPublish,
 	}
 
 	r.jobs = append(r.jobs, j)

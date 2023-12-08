@@ -12,7 +12,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type ScheduledJob interface {
+type Job interface {
 	Consume(ctxTimeout time.Duration) error
 	Publish(ctx context.Context, msg []byte, options ...PublishOption) error
 }
@@ -27,6 +27,7 @@ type job struct {
 	jobQueue    string
 	shutdown    chan struct{}
 	autoAck     bool
+	justPublish bool
 }
 
 func (j *job) Consume(ctxTimeout time.Duration) error {
@@ -88,7 +89,7 @@ func (j *job) Consume(ctxTimeout time.Duration) error {
 }
 
 func (j *job) Publish(ctx context.Context, msg []byte, options ...PublishOption) error {
-	p := amqp.Publishing{Body: msg}
+	p := amqp.Publishing{ContentType: "text/json", Body: msg}
 
 	for _, opt := range options {
 		opt(&p)

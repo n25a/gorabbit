@@ -11,7 +11,7 @@
 
 gorabbit is a RabbitMQ client for Golang. It is a wrapper around [rabbitmq/amqp091-go](github.com/rabbitmq/amqp091-go) library. 
 It provides a simple interface to interact with RabbitMQ. Also, it provides a simple way to create a consumer and a publisher that we call `jobs`.
-It's good to mention that gorabbit handles the reconnection and consuming the jobs automatically.
+It's good to mention that gorabbit handles the reconnection and reconsuming the jobs automatically.
 
 
 ## 📦 Installation

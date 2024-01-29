@@ -92,26 +92,34 @@ func (r *rabbitMQ) Connect() error {
 		}
 	}
 
+	if r.channel == nil {
+		r.channel, err = r.conn.Channel()
+		if err != nil {
+			return fmt.Errorf("failed to open a RabbitMQ channel: %s", err)
+		}
+	}
+
 	go func() {
 		<-r.conn.NotifyClose(make(chan *amqp.Error))
-		logger.Warn(">>>>>>>>> try to reconnect to rabbitmq")
+
+		r.ShutdownJobs()
+
+		logger.Warn("try to reconnect to rabbitmq")
 		err := r.Connect()
 		if err != nil {
 			logger.Fatal("error in connecting to rabbitMQ", zap.Error(err))
 		}
 
-		r.ShutdownJobs()
+		for _, j := range r.jobs {
+			j.channel = r.channel
+		}
+
 		err = r.StartConsumingJobs()
 		if err != nil {
 			logger.Fatal("error in starting jobs via rabbitMQ", zap.Error(err))
 		}
 		logger.Warn("all jobs restarted")
 	}()
-
-	r.channel, err = r.conn.Channel()
-	if err != nil {
-		return fmt.Errorf("failed to open a RabbitMQ channel: %s", err)
-	}
 
 	return nil
 }

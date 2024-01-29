@@ -16,6 +16,9 @@ func WithContentType(contentType string) PublishOption {
 // delay is milliseconds type
 func WithDelay(delay int64) PublishOption {
 	return func(publishing *amqp.Publishing) *amqp.Publishing {
+		if publishing.Headers == nil {
+			publishing.Headers = make(amqp.Table)
+		}
 		publishing.Headers["x-delay"] = delay
 		return publishing
 	}

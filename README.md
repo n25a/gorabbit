@@ -10,8 +10,8 @@
 ## 📖 Introduction
 
 gorabbit is a RabbitMQ client for Golang. It is a wrapper around [rabbitmq/amqp091-go](github.com/rabbitmq/amqp091-go) library. 
-It provides a simple interface to interact with RabbitMQ. Also, it provides a simple way to create a consumer and a publisher that we call them `jobs`.
-It's good to mentioned that gorabbit handles the reconnection and reconsuming the jobs automatically.
+It provides a simple interface to interact with RabbitMQ. Also, it provides a simple way to create a consumer and a publisher that we call `jobs`.
+It's good to mention that gorabbit handles the reconnection and reconsuming the jobs automatically.
 
 
 ## 📦 Installation
@@ -27,7 +27,7 @@ In the following, we will show you how to use gorabbit in your project.
 
 ### 🐇 Create a connection
 
-At the first step, you should create a rabbitmq instance. Then, you can create a connection to the rabbitmq server.
+In the first step, you should create a rabbitmq instance. Then, you can make a connection to the rabbitmq server.
 
 ```go
 import (
@@ -58,11 +58,11 @@ func main() {
 Each parameter of the `NewRabbitMQ` function is described below:  
 * dsn: RabbitMQ connection string. It should be in the following format: `amqp://user:password@host:port/vhost`
 * dialTimeout: The timeout for dialing to the RabbitMQ server. The default value is 5 seconds.
-* dialRetry: The number of retries for dialing to the RabbitMQ server. The default value is 0.
-* ctxTimeout: The timeout for the context of consumer handler. The default value is 1 second.
+* dialRetry: The number of retries for dialing the RabbitMQ server. The default value is 0.
+* ctxTimeout: The timeout for the context of the consumer handler. The default value is 1 second.
 * logLevel: The log level for the gorabbit. The default value is `info`. It can be `debug`, `info`, `warn`, `error`, `fatal`, `panic`, `dpanic`.
 
-This function create instance of the `RabbitMQ` struct. This struct has the following methods:
+This function creates an instance of the `RabbitMQ` struct. This struct has the following methods:
 * Connect: Create a connection to the RabbitMQ server.
 * Close: Close the connection to the RabbitMQ server.
 * Declare: Declare a queue and an exchange.
@@ -75,11 +75,11 @@ This function create instance of the `RabbitMQ` struct. This struct has the foll
 For connecting to the RabbitMQ server, you should call the `Connect` method. Also, you should call the `Close` method for closing the connection.
 
 
-### ✍️ Declare a queue and a exchange
+### ✍️ Declare a queue and an exchange
 
-For declaring a queue and an exchange, you should call the `Declare` method. This method has the following parameters:
-* exchangeOption: The exchange options. It can be created by the `ExchangeDeclareOption` function.
-* queueOption: The queue options. It can be created by the `QueueDeclareOption` function. It's good to mentioned that you can pass multiple queue options to this function for same exchange.
+You should call the `Declare` method for declaring a queue and an exchange. This method has the following parameters:
+* exchangeOption: The exchange options. The `ExchangeDeclareOption` function can create it.
+* queueOption: The queue options. The `QueueDeclareOption` function can create it. It's good to mention that you can pass multiple queue options to this function for the exact exchange.
 
 ```go
 import (
@@ -124,15 +124,15 @@ func main() {
 
 ### 📩 Consume a job
 
-For consuming a job, you should create a job instance. Then, you should call the `StartConsumingJobs` method for starting the consumers.
-This method, start consuming of all jobs that created by `gorabbit.RabbitMQ` instance.
+To create a job instance, you should create a job instance. Then, you should call the `StartConsumingJobs` method for starting the consumers.
+This method consumes all jobs created by `gorabbit.RabbitMQ` instance.
 
-Creating new `job` instance has the following parameters:
-* handler: The handler function for consuming the job. It should be in the following format: `func(ctx context.Context, message []byte) error`.
+Creating a new `job` instance has the following parameters:
+* handler: The handler function for consuming the job. It should be in the format: `func(ctx context.Context, message []byte) error`.
 * jobExchange: The exchange name for consuming the job.
 * jobQueue: The queue name for consuming the job.
 * autoAck: The auto ack for consuming the job.
-* justPublish: It's a flag for just publishing the job. It's useful for start all consumers and pass publishers jobs.
+* justPublish: It's a flag for just publishing the job. It helps start all consumers and pass publishers' jobs.
 
 ```go
 import (
@@ -167,14 +167,14 @@ func main() {
 
 ### 📨 Publish a job
 
-For publishing a job, you should create a job instance. Then, you should call the `Publish` method for publishing the job.
-This method, publish the message on declared job to the RabbitMQ server.
+To publish a job, you should create a job instance. Then, you should call the `Publish` method for publishing the job.
+This method, publishes the message on the declared job to the RabbitMQ server.
 The `Publish` method has the following parameters:
 * ctx: The context for publishing the job.
 * message: The message for publishing the job. It should be in the `[]byte` format.
-* options: The options for publishing the job. It can be created by the `PublishOption` function. These optional options are described below:
+* options: The options for publishing the job. The `PublishOption` function can create it. These optional options are described below:
     * WithContentType: The content type for publishing the job. The default value is `text/json`.
-    * WithDelay: The delay for publishing the job. The default value is 0.
+    * WithDelay: The delay in publishing the job. The default value is 0.
     * WithPriority: The priority for publishing the job. The default value is 0.
 
 ```go

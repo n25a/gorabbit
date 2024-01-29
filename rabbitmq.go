@@ -109,6 +109,7 @@ func (r *rabbitMQ) Connect() error {
 		if err != nil {
 			logger.Fatal("error in connecting to rabbitMQ", zap.Error(err))
 		}
+		logger.Warn("reconnected to rabbitmq")
 
 		for _, j := range r.jobs {
 			j.channel = r.channel

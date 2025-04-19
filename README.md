@@ -186,7 +186,7 @@ func main() {
     //...
 
     // Create a consumer
-    err = rabbit.StartJobs()
+    err = rabbit.StartConsumingJobs()
     if err != nil {
         panic(err)
     }

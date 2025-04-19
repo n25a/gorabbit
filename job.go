@@ -71,7 +71,7 @@ func (j *job) Consume(ctxTimeout time.Duration) error {
 				err = j.handler(ctx, msg.Body)
 				if !j.autoAck {
 					if err != nil {
-						err := msg.Nack(false, false)
+						err := msg.Nack(false, true)
 						if err != nil {
 							logger.Error("error in sending nack", zap.Error(err))
 						}

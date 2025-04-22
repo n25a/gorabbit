@@ -67,7 +67,7 @@ func (j *job) Consume(ctxTimeout time.Duration) error {
 				}
 
 				if len(msg.Body) == 0 {
-					msg.Ack(false)
+					msg.Ack(true)
 					continue
 				}
 

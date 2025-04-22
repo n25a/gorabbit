@@ -66,6 +66,11 @@ func (j *job) Consume(ctxTimeout time.Duration) error {
 					continue
 				}
 
+				if len(msg.Body) == 0 {
+					msg.Ack(false)
+					continue
+				}
+
 				ack := false
 				for i := 0; i < 3; i++ {
 					ctx := context.Background()

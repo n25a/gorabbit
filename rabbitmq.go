@@ -122,6 +122,8 @@ func (r *rabbitMQ) Connect() error {
 		logger.Warn("all jobs restarted")
 	}()
 
+	logger.Info("connect to rabbitmq", zap.String("dsn", r.dsn))
+
 	return nil
 }
 

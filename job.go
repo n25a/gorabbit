@@ -71,41 +71,30 @@ func (j *job) Consume(ctxTimeout time.Duration) error {
 					continue
 				}
 
-				ack := false
-				for i := 0; i < 3; i++ {
-					ctx := context.Background()
-					ctx, cancel := context.WithTimeout(ctx, ctxTimeout)
-					err = j.handler(ctx, msg.Body)
-					if err != nil {
-						logger.Error("error in running RabbitMQ handler", zap.Error(err), zap.Any("body", msg.Body))
-					} else {
-						logger.Debug("job running successfully")
-					}
-
-					cancel()
-
-					if !j.autoAck {
-						if err != nil {
-							err := msg.Nack(false, true)
-							if err != nil {
-								logger.Error("error in sending nack", zap.Error(err))
-							}
-						} else {
-							err := msg.Ack(true)
-							ack = true
-							if err != nil {
-								logger.Error("error in sending ack", zap.Error(err))
-							}
-							break
-						}
-					} else {
-						ack = true
-						break
-					}
+				ctx := context.Background()
+				ctx, cancel := context.WithTimeout(ctx, ctxTimeout)
+				err = j.handler(ctx, msg.Body)
+				if err != nil {
+					logger.Error("error in running RabbitMQ handler", zap.Error(err), zap.Any("body", msg.Body))
+				} else {
+					logger.Debug("job running successfully")
 				}
 
-				if !ack {
-					_ = msg.Ack(true)
+				cancel()
+
+				if !j.autoAck {
+					if err != nil {
+						err := msg.Nack(false, true)
+						if err != nil {
+							logger.Error("error in sending nack", zap.Error(err))
+						}
+					} else {
+						err := msg.Ack(true)
+						if err != nil {
+							logger.Error("error in sending ack", zap.Error(err))
+						}
+						break
+					}
 				}
 			}
 		}
